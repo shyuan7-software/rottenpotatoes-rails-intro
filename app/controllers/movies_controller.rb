@@ -11,16 +11,25 @@ class MoviesController < ApplicationController
   end
 
   def index
-    #@movies = Movie.all
-    @sort_method = params[:sort]
-    @movies = Movie.order @sort_method
-    if @sort_method=='title'
-      @title_hilite = 'hilite'
-      @release_date_hilite = ''
-    end
-    if @sort_method=='release_date'
+    @all_ratings=Movie.all_ratings
+    @check_ratings = params[:ratings]
+    if @check_ratings
+      @movies = Movie.with_ratings(@check_ratings)
       @title_hilite = ''
-      @release_date_hilite = 'hilite'
+      @release_date_hilite = ''
+    else
+      @check_ratings={'G' => true,'PG' => true, 'PG-13'=> true, 'R' => true}
+      #@movies = Movie.all
+      @sort_method = params[:sort]
+      @movies = Movie.order @sort_method
+      if @sort_method=='title'
+        @title_hilite = 'hilite'
+        @release_date_hilite = ''
+      end
+      if @sort_method=='release_date'
+        @title_hilite = ''
+        @release_date_hilite = 'hilite'
+      end
     end
   end
 
