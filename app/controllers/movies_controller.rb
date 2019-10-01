@@ -13,24 +13,52 @@ class MoviesController < ApplicationController
   def index
     @all_ratings=Movie.all_ratings
     @check_ratings = params[:ratings]
+    @original_check_ratings = params[:ratings]
+    @remembered_check_ratings = session[:ratings]
     if @check_ratings
-      @movies = Movie.with_ratings(@check_ratings)
+      session[:ratings]=@check_ratings
+      #@movies = Movie.with_ratings(@check_ratings)
+    else
+      if @remembered_check_ratings
+        @check_ratings=@remembered_check_ratings
+      else
+        @check_ratings={'G' => true,'PG' => true, 'PG-13'=> true, 'R' => true}
+        session[:ratings]=@check_ratings
+      end
+      #redirect_to :ratings => @check_ratings
+    end
+    
+    @sort_method = params[:sort]
+    @original_sort_method = params[:sort]
+    @remembered_sort_method = session[:sort]
+    if @sort_method
+      session[:sort]=@sort_method
+    else
+      if @remembered_sort_method
+        @sort_method=@remembered_sort_method
+      else
+        @sort_method =''
+        session[:sort]=@sort_method
+      end
+      #redirect_to :sort => @sort_method
+    end
+    
+    if @original_sort_method!=@sort_method||@original_check_ratings!=@check_ratings
+      flash.keep
+      redirect_to :sort => @sort_method, :ratings =>@check_ratings
+    end
+    
+    if @sort_method=='title'
+      @title_hilite = 'hilite'
+      @release_date_hilite = ''
+    elsif @sort_method=='release_date'
+      @title_hilite = ''
+      @release_date_hilite = 'hilite'
+    else
       @title_hilite = ''
       @release_date_hilite = ''
-    else
-      @check_ratings={'G' => true,'PG' => true, 'PG-13'=> true, 'R' => true}
-      #@movies = Movie.all
-      @sort_method = params[:sort]
-      @movies = Movie.order @sort_method
-      if @sort_method=='title'
-        @title_hilite = 'hilite'
-        @release_date_hilite = ''
-      end
-      if @sort_method=='release_date'
-        @title_hilite = ''
-        @release_date_hilite = 'hilite'
-      end
     end
+    @movies = Movie.with_ratings(@check_ratings).order(@sort_method)
   end
 
   def new
